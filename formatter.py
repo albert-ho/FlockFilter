@@ -4,15 +4,25 @@ import random
 
 # please set the DIR_PATH to where the files are.
 
-DIR_PATH = "./"
+DIR_PATH = "Data/"
 
-SRC_FILE   = DIR_PATH + "KaepernickStorm.csv"
-DST_FILE   = DIR_PATH + "KaepernickLabels.csv"
+RAW_FILE = DIR_PATH + "MelaniaTrumpStorm.csv"
+LABEL_FILE = DIR_PATH + "MelaniaTrumpLabels.csv"
+TRAIN_FILE = DIR_PATH + "MelaniaTrumpTrain.csv"
+TEST_FILE  = DIR_PATH + "MelaniaTrumpTest.csv"
+SORT_FILE  = DIR_PATH + "MelaniaTrumpSort.csv"
 
+'''
+RAW_FILE   = DIR_PATH + "KaepernickStorm.csv"
+LABEL_FILE = DIR_PATH + "KaepernickLabels.csv"
+TRAIN_FILE = DIR_PATH + "KaepernickTrain.csv"
+TEST_FILE  = DIR_PATH + "KaepernickTest.csv"
+SORT_FILE  = DIR_PATH + "KaepernickSort.csv"
+'''
 ########
 
 
-def readCsv(fname, skipFirst=True, delimiter=";"):
+def readCsv(fname, skipFirst=False, delimiter=";"):
     reader = csv.reader(open(fname,"rb"),delimiter=delimiter)
     rows = []
     count = 1
@@ -31,18 +41,35 @@ def write_csv(x,filename,x_format):
     wtr.close()
     
 
-def tweet_format(tweet):
+def raw_tweet_format(tweet):
 	[id_str, epoch, date_time, username] = tweet[:4]
 	text = "".join(tweet[4:])
-	return ";{};{}".format(id_str, text)
+	return "2;{}".format(text)
+	
+
+def labeled_tweet_format(tweet):
+	label = tweet[0]
+	text = "".join(tweet[1:])
+	return "{};{}".format(label, text)
     
 
-def sample(tweets, n_samples=1000):
+def sample(tweets, n_samples):
 	return random.sample(tweets, n_samples)
 
 
 if __name__=="__main__":
-    tweets = readCsv(SRC_FILE, False)
-    tweet_sample = sample(tweets, 1000)
-    write_csv(tweet_sample, DST_FILE, tweet_format)
+	
+	'''
+    tweets = readCsv(RAW_FILE)
+    tweet_sample = sample(tweets, 3000)
+    write_csv(tweet_sample, LABEL_FILE, raw_tweet_format)
+    '''
     
+	labeled_tweets = readCsv(LABEL_FILE)
+	labeled_tweets = [t for t in labeled_tweets if (int(t[0]) != 2)]
+	n = 500
+	tweets = sample(labeled_tweets, n)
+	train_set = tweets[:(n/25)]
+	test_set = tweets[(n/25):]
+	write_csv(train_set, TRAIN_FILE, labeled_tweet_format)
+	write_csv(test_set, TEST_FILE, labeled_tweet_format)

@@ -17,13 +17,17 @@ from time import time
 # - Line 197 specifies a random forest model with 4 threads (2.5GB RAM per thread is needed). If necessary, reduce the n_jobs param.
 # The RF makes a small improvement, so its commented out and probably not worth the effort.
 
-DIR_PATH = "./"
+DIR_PATH = "Data/"
 
-TRAIN_FILE      = DIR_PATH + "train.csv"
-TEST_SOL_FILE   = DIR_PATH + "test_with_solutions.csv"   # This is also used for training, together with TRAIN_FILE
+'''
+TRAIN_FILE      = DIR_PATH + "KaepernickTrain.csv"
+TEST_FILE       = DIR_PATH + "KaepernickTest.csv"          # set this to the new test file name
+'''
+
+TRAIN_FILE      = DIR_PATH + "MelaniaTrumpTrain.csv"
+TEST_FILE       = DIR_PATH + "MelaniaTrumpTest.csv"          # set this to the new test file name
+
 BADWORDS_FILE   = DIR_PATH + "badwords.txt"              # attached with submission  
-
-TEST_FILE       = DIR_PATH + "impermium_verification_labels.csv"          # set this to the new test file name
 PREDICTION_FILE = DIR_PATH + "preds.csv"                 # predictions will be written here 
 
 ########
@@ -155,15 +159,13 @@ def run(verbose = True):
     t0 = time()
 
     train_data = readCsv(TRAIN_FILE)
-    train2_data = readCsv(TEST_SOL_FILE)
-    train_data = train_data + train2_data
     
     labels  = array([int(x[0]) for x in train_data])
         
-    train  = [x[2] for x in train_data]
+    train  = [x[1] for x in train_data]
 
     test_data = readCsv(TEST_FILE)
-    test_data = [x[3] for x in test_data]        
+    test_data = [x[1] for x in test_data]        
     data = train + test_data
     
     n = len(data)
@@ -201,7 +203,7 @@ def run(verbose = True):
     
 def runClassifiers(X_train, y_train, X_test, y_test = None, verbose = True):
     
-    models = [  linear_model.LogisticRegression(C=3), \
+    models = [  #linear_model.LogisticRegression(C=3), \
                 svm.SVC(C=0.3,kernel='linear',probability=True) ,  \
                 #ensemble.RandomForestClassifier(n_estimators=500, n_jobs=4, max_features = 15, min_samples_split=10, random_state = 100),  \
                 #ensemble.GradientBoostingClassifier(n_estimators=400, learn_rate=0.1, subsample = 0.5, min_samples_split=15, random_state = 100) \
@@ -229,7 +231,7 @@ def runClassifiers(X_train, y_train, X_test, y_test = None, verbose = True):
         #    write_submission(pred[:,1], filename)
 
     #final_pred = preds[0]*0.4+preds[1]*0.6
-    final_pred = preds[1]
+    final_pred = preds[0]
     
     return final_pred
 
@@ -246,7 +248,7 @@ def loadBW():
 
 
 
-def readCsv(fname, skipFirst=True, delimiter = ","):
+def readCsv(fname, skipFirst=False, delimiter = ";"):
     reader = csv.reader(open(fname,"rb"),delimiter=delimiter)
     
     rows = []
@@ -274,7 +276,7 @@ def evaluate_results(pred_file, test_file):
 		preds.append(int(row[0]))
 	
 	correct = readCsv(test_file)
-	correct = [int(x[1]) for x in correct]
+	correct = [int(x[0]) for x in correct]
 	
 	assert(len(preds) == len(correct)), \
 	"Prediction length differs from test length"
